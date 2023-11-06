@@ -1,45 +1,29 @@
 import styled from "styled-components";
 import { useEffect, useState } from "react";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faUser, faEnvelope, faLock } from "@fortawesome/free-solid-svg-icons";
+import { faXTwitter } from "@fortawesome/free-brands-svg-icons";
+import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
+import { auth } from "../firebase";
+import { Link, useNavigate } from "react-router-dom";
+import { FirebaseError } from "firebase/app";
+import {
+  Error,
+  FormItem,
+  Input,
+  Switcher,
+  Title,
+  Wrapper,
+  Form,
+} from "../components/auth-components";
+import GithubButton from "../components/github-btn";
 
-const Wrapper = styled.div`
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  width: 420px;
-  padding: 50px 0;
-`;
-const Form = styled.form`
-  margin-top: 50px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  width: 100%;
-`;
-const Input = styled.input`
-  padding: 10px 20px;
-  border-radius: 50px;
-  border: none;
-  width: 100%;
-  font-size: 16px;
-  &[type="submit"] {
-    cursor: pointer;
-    transition: 0.5s;
-    &:hover {
-      opacity: 0.8;
-      transition: 0.5s;
-    }
-  }
-`;
-const Title = styled.h1`
-  font-size: 42px;
-`;
+// const errors = {
+//   "auth/email-already-in-use": "이미 사용 중인 이메일입니다.",
+// };
 
-const Error = styled.span`
-  font-weight: 600;
-  color: tomato;
-`;
 export default function CreateAccount() {
+  const navigate = useNavigate();
   const [isLoading, setLoading] = useState(false);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -59,53 +43,92 @@ export default function CreateAccount() {
     }
   };
 
-  const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    setError("");
+    if (isLoading || name === "" || email === "" || password === "") return;
     try {
-      // 계정 생성
-      // 프로필 이름?
-    } catch {
-      //setError
+      setLoading(true);
+      const credentials = await createUserWithEmailAndPassword(
+        auth,
+        email,
+        password
+      );
+      console.log(credentials.user);
+
+      await updateProfile(credentials.user, {
+        displayName: name,
+      });
+      navigate("/");
+    } catch (e) {
+      if (e instanceof FirebaseError) {
+        setError(e.message);
+      }
     } finally {
       setLoading(false);
     }
-
-    console.log(name, email, password);
   };
   return (
     <Wrapper>
-      <Title>Log into KWITTER</Title>
+      <Title>
+        Join <FontAwesomeIcon icon={faXTwitter} />
+      </Title>
       <Form onSubmit={onSubmit}>
-        <Input
-          onChange={onChange}
-          name="name"
-          value={name}
-          placeholder="Name"
-          type="text"
-          required
-        />
-        <Input
-          onChange={onChange}
-          name="email"
-          value={email}
-          placeholder="Email"
-          type="email"
-          required
-        />
-        <Input
-          onChange={onChange}
-          value={password}
-          name="password"
-          placeholder="Password"
-          type="password"
-          required
-        />
+        <FormItem>
+          <FontAwesomeIcon
+            icon={faUser}
+            style={{ color: "black", marginRight: "10px", fontSize: "20px" }}
+          />
+          <Input
+            onChange={onChange}
+            name="name"
+            value={name}
+            placeholder="이름을 입력하세요"
+            type="text"
+            required
+          />
+        </FormItem>
+
+        <FormItem>
+          <FontAwesomeIcon
+            icon={faEnvelope}
+            style={{ color: "black", marginRight: "10px", fontSize: "20px" }}
+          />
+          <Input
+            onChange={onChange}
+            name="email"
+            value={email}
+            placeholder="이메일을 입력하세요"
+            type="email"
+            required
+          />
+        </FormItem>
+
+        <FormItem>
+          <FontAwesomeIcon
+            icon={faLock}
+            style={{ color: "black", marginRight: "10px", fontSize: "20px" }}
+          />
+          <Input
+            onChange={onChange}
+            value={password}
+            name="password"
+            placeholder="비밀번호를 입력하세요"
+            type="password"
+            required
+          />
+        </FormItem>
         <Input
           type="submit"
           value={isLoading ? "Loading..." : "Create Account"}
         />
       </Form>
       {error !== "" ? <Error>{error}</Error> : null}
+      <Switcher>
+        이미 아이디가 존재하나요?
+        <Link to="/login">로그인하기 &rarr;</Link>
+      </Switcher>
+      <GithubButton />
     </Wrapper>
   );
 }
