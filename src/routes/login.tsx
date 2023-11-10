@@ -91,7 +91,7 @@ export default function CreateAccount() {
       {error !== "" ? <Error>{error}</Error> : null}
       <Switcher>
         아직 계정이 없으신가요?
-        <Link to="/create-account">회원가입 하기 &rarr;</Link>
+        <Link to="/create-account">회원가입 하기</Link>
       </Switcher>
       <GithubButton />
     </Wrapper>

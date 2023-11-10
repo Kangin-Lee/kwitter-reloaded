@@ -126,7 +126,7 @@ export default function CreateAccount() {
       {error !== "" ? <Error>{error}</Error> : null}
       <Switcher>
         이미 아이디가 존재하나요?
-        <Link to="/login">로그인하기 &rarr;</Link>
+        <Link to="/login">로그인 하기</Link>
       </Switcher>
       <GithubButton />
     </Wrapper>
